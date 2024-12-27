@@ -66,7 +66,7 @@ const server = createServer((req, res) => {
           res.end(JSON.stringify({ message: "Find User Success", findUser }));
         } else {
           res.writeHead(400);
-          res.end(JSON.stringify({ message: "Find User Failed" }));
+          res.end(JSON.stringify({ message: "FindUser Failed" }));
         }
       case "PUT":
         const userIndex = users.findIndex((u) => u.id === id);
