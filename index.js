@@ -1,6 +1,6 @@
-import { createServer } from "node:http";
+import express, { json } from "express";
 
-const hostname = "127.0.0.1";
+const app = express();
 const port = 3000;
 
 const users = [
@@ -10,90 +10,29 @@ const users = [
   },
   {
     id: 2,
-    username: "Hung",
+    username: "Quoc",
   },
   {
     id: 3,
-    username: "Dao",
+    username: "Tuan",
   },
 ];
 
-const server = createServer((req, res) => {
-  res.statusCode = 200;
-  const url = req.url;
-  const method = req.method;
-  res.setHeader("Content-Type", "application/json");
-  if (url === "/users") {
-    switch (method) {
-      case "GET":
-        return res.end(
-          JSON.stringify({
-            message: "Danh sách users",
-            users,
-          })
-        );
-      case "POST":
-        let body = "";
-        req.on("data", (chunk) => {
-          console.log(chunk);
-          body += chunk.toString();
-        });
+app.use(json());
 
-        return req.on("end", () => {
-          const { username } = JSON.parse(body);
-          const newUser = {
-            id: users.length + 1,
-            username,
-          };
-          users.push(newUser);
-          res.writeHead(201);
-          res.end(JSON.stringify(newUser));
-        });
-      default:
-        throw new Error("error method");
-    }
-  } else if (url.match(/\/users\/\d+/)) {
-    const id = parseInt(url.split("/")[2]);
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk.toString();
-    });
-    switch (method) {
-      case "GET":
-        const findUser = users.find((user) => user.id === id);
-        if (findUser) {
-          res.writeHead(200);
-          res.end(JSON.stringify({ message: "Find User Success", findUser }));
-        } else {
-          res.writeHead(400);
-          res.end(JSON.stringify({ message: "FindUser Failed" }));
-        }
-      case "PUT":
-        const userIndex = users.findIndex((u) => u.id === id);
-        if (userIndex !== -1) {
-          return req.on("end", () => {
-            const { username } = JSON.parse(body);
-            users[userIndex] = { id, username };
-            res.writeHead(200);
-            res.end(JSON.stringify(users[userIndex]));
-          });
-        }
-      case "DELETE":
-        return req.on("end", () => {
-          const newUsers = users.filter((user) => user.id !== id);
-          users.length = 0;
-          users.push(...newUsers);
-          res.writeHead(200);
-          res.end(JSON.stringify({ message: "Delete Success", id }));
-        });
-      default:
-        throw new Error("error");
-    }
-  } else {
-    res.writeHead(404);
-  }
+app.get("/", (req, res) => {
+  res.send("Hello World!");
 });
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+app.get("/users", (req, res) => {
+  res.send(users);
+});
+
+app.post("/users", (req, res) => {
+  users.push(req.body);
+  res.send("Create success");
+});
+
+app.listen(port, () => {
+  console.log(`Server is running at port: ${port}`);
 });
