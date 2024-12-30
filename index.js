@@ -12,6 +12,12 @@ app.use(json());
 
 routes(app);
 
+app.use((req, res) => {
+  return res.status(404).json({
+    message: "Route not found",
+  });
+});
+
 app.get("/", (req, res) => {
   console.log(req.body);
 });

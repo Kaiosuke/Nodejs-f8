@@ -136,6 +136,13 @@ const UserController = {
   updateUser: async (req, res) => {
     try {
       const { id } = req.params;
+      const findUser = await Users.findById(id);
+
+      if (!findUser) {
+        return res.status(404).json({
+          message: "Not found user",
+        });
+      }
 
       const existingUser = await Users.findOne({ email: req.body.email });
       if (existingUser) {
@@ -151,12 +158,6 @@ const UserController = {
         },
         { new: true }
       );
-
-      if (!user) {
-        return res.status(404).json({
-          message: "Not found user",
-        });
-      }
 
       return res.status(200).json({
         message: "Update user success",
