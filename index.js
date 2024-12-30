@@ -1,38 +1,21 @@
 import express, { json } from "express";
+import connect from "./config/db/index.js";
+import routes from "./routes/index.js";
+
+const port = 8888;
+
+connect();
 
 const app = express();
-const port = 3000;
-
-const users = [
-  {
-    id: 1,
-    username: "Tran",
-  },
-  {
-    id: 2,
-    username: "Quoc",
-  },
-  {
-    id: 3,
-    username: "Tuan",
-  },
-];
 
 app.use(json());
 
+routes(app);
+
 app.get("/", (req, res) => {
-  res.send("Hello World!1");
-});
-
-app.get("/users", (req, res) => {
-  res.send(users);
-});
-
-app.post("/users", (req, res) => {
-  users.push(req.body);
-  res.send("Create success");
+  console.log(req.body);
 });
 
 app.listen(port, () => {
-  console.log(`Server is running at port: ${port}`);
+  console.log(`Server is running ...: ${port}`);
 });
