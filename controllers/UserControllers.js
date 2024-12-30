@@ -21,7 +21,7 @@ const UserController = {
     }
   },
 
-  //Get users
+  //Get user
   getUser: async (req, res) => {
     try {
       const { id } = req.params;
