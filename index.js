@@ -4,7 +4,7 @@ import routes from "./routes/index.js";
 
 const port = 8888;
 
-connect();
+// connect();
 
 const app = express();
 
@@ -12,14 +12,14 @@ app.use(json());
 
 routes(app);
 
-app.use((req, res) => {
-  return res.status(404).json({
-    message: "Route not found",
-  });
+app.get("/", (req, res) => {
+  return res.end("Hello");
 });
 
-app.get("/", (req, res) => {
-  console.log(req.body);
+app.use((req, res) => {
+  return res.status(404).json({
+    message: "Router not found",
+  });
 });
 
 app.listen(port, () => {
