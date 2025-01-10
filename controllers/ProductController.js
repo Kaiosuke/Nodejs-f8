@@ -1,149 +1,161 @@
-const url = "http://localhost:3000/products";
-const headers = { "Content-Type": "Application/json" };
-
-const errorHandler = (res, error) => {
-  return res.status(500).json({
-    message: "Internal server error",
-    error: error.message,
-  });
-};
-
-const handleStatus200 = (res, message, data) => {
-  return res.status(200).json({
-    message,
-    data,
-  });
-};
-
-const handleStatus400 = (res) => {
-  return res.status(400).json({
-    message: "Invalid input data",
-  });
-};
-
-const handleStatus404 = (res, message) => {
-  return res.status(404).json({
-    message,
-  });
-};
+import {
+  handleError404,
+  handleError500,
+  handleSuccess200,
+  handleSuccess201,
+} from "../helper/handleStatus.js";
+import Product from "../models/data/Product.js";
+import Category from "../models/data/Category.js";
 
 const ProductController = {
-  // Get Products
+  //Get products
   getProducts: async (req, res) => {
     try {
-      const response = await fetch(`${url}`, {
-        method: "GET",
-        headers,
-      });
-      if (response.status === 404) {
-        return handleStatus404(res, "Not found products");
+      const products = await Product.find();
+      if (!products || !products.length) {
+        return handleError404(res, "Not found products");
       }
-      const products = await response.json();
 
-      if (response.status === 200) {
-        return handleStatus200(res, "Get products success", products);
-      }
+      return handleSuccess200(res, "Get products success", products);
     } catch (error) {
-      return errorHandler(res, error);
+      return handleError500(res, error);
     }
   },
 
-  // Get Product
-  getProduct: async (req, res) => {
+  //Get product
+  getProduct: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const response = await fetch(`${url}/${id}`, {
-        method: "GET",
-        headers,
-      });
+      const product = await Product.findById(id);
 
-      if (response.status === 404) {
-        return handleStatus404(res, "Not found product");
+      if (!product) {
+        return handleError404(res, "Not found product");
       }
-      const products = await response.json();
 
-      if (response.status === 200) {
-        return handleStatus200(res, "Get product success", products);
-      }
+      return handleSuccess200(res, "Get product success", product);
     } catch (error) {
-      return errorHandler(res, error);
+      return handleError500(res, error);
     }
   },
 
-  // Add Product
-  addProduct: async (req, res) => {
+  //Post product
+  createProduct: async (req, res) => {
     try {
-      const data = req.body;
+      const { categoryId } = req.body;
+      const exitsCategory = await Category.findOne({ _id: categoryId });
 
-      if (!data.title || !data.price) {
-        return handleStatus400(res);
+      if (!exitsCategory) {
+        return handleError404(res, "Not found category");
       }
+      const newProduct = await Product.create(req.body);
 
-      const response = await fetch(`${url}`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(req.body),
-      });
-
-      const product = await response.json();
-
-      if (response.status === 201) {
-        return handleStatus200(res, "add product success", product);
-      }
+      return handleSuccess200(res, "Create product success", newProduct);
     } catch (error) {
-      return errorHandler(res, error);
+      return handleError500(res, error);
     }
   },
 
-  // update Product
-  update: async (req, res) => {
+  //Post products
+  createProducts: async (req, res) => {
     try {
-      const { id } = req.params;
-      const data = req.body;
+      const { products } = req.body;
 
-      if (!data.title || !data.price) {
-        return handleStatus400(res);
-      }
+      const categoryIds = products.map((product) => product.categoryId);
 
-      const response = await fetch(`${url}/${id}`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify(req.body),
+      const existCategories = await Category.find({
+        _id: { $in: categoryIds },
       });
 
-      if (response.status === 404) {
-        return handleStatus404(res, "Not Found Product");
+      const invalidCategoryIds = existCategories.map((cate) =>
+        cate._id.toString()
+      );
+
+      const invalidProducts = products.filter(
+        (product) => !invalidCategoryIds.includes(product.categoryId)
+      );
+
+      if (invalidProducts.length) {
+        return handleError404(res, "Not found Category", invalidProducts);
       }
 
-      const product = await response.json();
+      const newProducts = await Product.insertMany(products);
 
-      if (response.status === 200) {
-        return handleStatus200(res, "Update product success", product);
-      }
+      return handleSuccess201(res, "Create products success", newProducts);
     } catch (error) {
-      return errorHandler(res, error);
+      return handleError500(res, error);
     }
   },
 
-  // Delete Product
-  delete: async (req, res) => {
+  //Update product
+  updateProduct: async (req, res) => {
     try {
       const { id } = req.params;
+      const { categoryId } = req.body;
 
-      const response = await fetch(`${url}/${id}`, {
-        method: "DELETE",
-        headers,
-      });
+      const findProduct = await Product.findById(id);
 
-      if (response.status === 404) {
-        return handleStatus404(res, "Not Found Product");
+      if (categoryId) {
+        const exitsCategory = await Category.findOne({ _id: categoryId });
+
+        if (!exitsCategory) {
+          return handleError404(res, "Not found category");
+        }
       }
 
-      if (response.status === 200) {
-        return handleStatus200(res, "Delete product success", id);
+      if (!findProduct) {
+        return handleError404(res, "Not found product");
       }
+
+      const product = await Product.findByIdAndUpdate(
+        id,
+        {
+          $set: req.body,
+        },
+        { new: true }
+      );
+      return handleSuccess200(res, "Update product success", product);
     } catch (error) {
-      return errorHandler(res, error);
+      return handleError500(res, error);
+    }
+  },
+
+  // Delete product
+  deleteProduct: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const product = await Product.findByIdAndDelete(id);
+      if (!product) {
+        return handleError404(res, "Not found product");
+      }
+      return handleSuccess200(res, "Delete product success", id);
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Delete products
+  deleteProducts: async (req, res) => {
+    try {
+      const { ids } = req.body;
+
+      const productsDelete = await Product.find({ _id: { $in: ids } });
+
+      if (!productsDelete.length) {
+        return handleError404(res, "Not found product");
+      }
+
+      await Product.deleteMany({ _id: { $in: ids } });
+
+      return handleSuccess200(
+        res,
+        `Delete ${productsDelete.length} ${
+          productsDelete.length > 1 ? "Products" : "Product"
+        } success`,
+        productsDelete.map((product) => product._id)
+      );
+    } catch (error) {
+      return handleError500(res, error);
     }
   },
 };

@@ -1,13 +1,19 @@
 import { Router } from "express";
 import UserController from "../controllers/UserControllers.js";
+import { dataListMiddleWare, dataMiddleWare } from "../middleWare/schema.js";
+import { registerSchema } from "../schema/index.js";
 
 const router = Router();
 
 router.get("/", UserController.getUsers);
 router.get("/:id", UserController.getUser);
 
-router.post("/", UserController.createUser);
-router.post("/many", UserController.createUsers);
+router.post("/", dataMiddleWare(registerSchema), UserController.createUser);
+router.post(
+  "/many",
+  dataListMiddleWare(registerSchema),
+  UserController.createUsers
+);
 
 router.patch("/:id", UserController.updateUser);
 

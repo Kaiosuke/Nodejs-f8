@@ -1,23 +1,25 @@
-import Users from "../models/Users.js";
+import {
+  handleError400,
+  handleError404,
+  handleError409,
+  handleError500,
+  handleSuccess200,
+  handleSuccess201,
+} from "../helper/handleStatus.js";
+import Users from "../models/data/User.js";
 
 const UserController = {
   //Get users
   getUsers: async (req, res) => {
     try {
       const users = await Users.find();
-      if (!users) {
-        return res.status(404).json({ message: "Not found users" });
+      if (!users.length) {
+        return handleError404(res, "Not found users");
       }
 
-      return res.status(200).json({
-        message: "Get users success",
-        users,
-      });
+      return handleSuccess200(res, "Get users success", users);
     } catch (error) {
-      return res.status(500).json({
-        message: "Internal server error",
-        error: error.message,
-      });
+      return handleError500(res, error);
     }
   },
 
@@ -28,18 +30,12 @@ const UserController = {
       const users = await Users.findById(id);
 
       if (!users) {
-        return res.status(404).json({ message: "Not found user" });
+        return handleError404(res, "Not found user");
       }
 
-      return res.status(200).json({
-        message: "Get user success",
-        users,
-      });
+      return handleSuccess200(res, "Get user success", users);
     } catch (error) {
-      return res.status(500).json({
-        message: "Internal server error",
-        error: error.message,
-      });
+      return handleError500(res, error);
     }
   },
 
@@ -48,17 +44,9 @@ const UserController = {
     try {
       const { username, email, password } = req.body;
 
-      if (!username || !email || !password) {
-        return res.status(400).json({
-          message: "Name, email and password are required",
-        });
-      }
-
       const existingEmail = await Users.findOne({ email: email });
       if (existingEmail) {
-        return res.status(409).json({
-          message: "Email already exists",
-        });
+        return handleError409(res, "Email already exists");
       }
       const newUser = new Users({
         username,
@@ -68,15 +56,9 @@ const UserController = {
 
       await newUser.save();
 
-      return res.status(201).json({
-        message: "Create user success",
-        newUser,
-      });
+      return handleSuccess200(res, "Create user success", newUser);
     } catch (error) {
-      return res.status(500).json({
-        message: "Internal server error",
-        error: error.message,
-      });
+      return handleError500(res, error);
     }
   },
 
@@ -90,10 +72,11 @@ const UserController = {
       );
 
       if (isValid.length) {
-        return res.status(400).json({
-          message: "Each user must have a username, email, and password",
-          isValid,
-        });
+        return handleError400(
+          res,
+          "Each user must have a username, email, and password",
+          isValid
+        );
       }
 
       const emails = users.map((user) => user.email);
@@ -103,32 +86,24 @@ const UserController = {
       );
 
       if (duplicateEmails.length > 0) {
-        return res.status(400).json({
-          message: "duplicate email from input data",
-          duplicateEmails,
-        });
+        return handleError400(
+          res,
+          "duplicate email from input data",
+          duplicateEmails
+        );
       }
 
       const existingEmail = await Users.find({ email: { $in: emails } });
 
       if (existingEmail.length > 0) {
-        return res.status(409).json({
-          message: "Email already exists",
-          existingEmail,
-        });
+        return handleError409(res, "Email already exists", existingEmail);
       }
 
       const newUsers = await Users.insertMany(users);
 
-      return res.status(201).json({
-        message: "Create user success",
-        newUsers,
-      });
+      return handleSuccess201(res, "Create user success", newUsers);
     } catch (error) {
-      return res.status(500).json({
-        message: "Internal server error",
-        error: error.message,
-      });
+      return handleError500(res, error);
     }
   },
 
@@ -139,16 +114,12 @@ const UserController = {
       const findUser = await Users.findById(id);
 
       if (!findUser) {
-        return res.status(404).json({
-          message: "Not found user",
-        });
+        return handleError404(res, "Not found user");
       }
 
       const existingUser = await Users.findOne({ email: req.body.email });
       if (existingUser) {
-        return res.status(409).json({
-          message: "Email already exists",
-        });
+        return handleError409(res, "Email already exists");
       }
 
       const user = await Users.findByIdAndUpdate(
@@ -158,16 +129,9 @@ const UserController = {
         },
         { new: true }
       );
-
-      return res.status(200).json({
-        message: "Update user success",
-        user,
-      });
+      return handleSuccess200(res, "Update user success", user);
     } catch (error) {
-      return res.status(500).json({
-        message: "Internal server error",
-        error: error.message,
-      });
+      return handleError500(res, error);
     }
   },
 
@@ -178,20 +142,11 @@ const UserController = {
 
       const user = await Users.findByIdAndDelete(id);
       if (!user) {
-        return res.status(404).json({
-          message: "Not found user",
-        });
+        return handleError404(res, "Not found user");
       }
-
-      return res.status(200).json({
-        message: "Delete user success",
-        id,
-      });
+      return handleSuccess200(res, "Delete user success", id);
     } catch (error) {
-      return res.status(500).json({
-        message: "Internal server error",
-        error: error.message,
-      });
+      return handleError500(res, error);
     }
   },
 
@@ -204,23 +159,19 @@ const UserController = {
 
       const user = await Users.deleteMany({ _id: { $in: ids } });
 
-      if (user.deletedCount < 1) {
-        return res.status(404).json({
-          message: "Not found user",
-        });
+      if (!user.deletedCount) {
+        return handleError404(res, "Not found user");
       }
 
-      return res.status(200).json({
-        message: `Delete ${usersDelete.length} ${
+      return handleSuccess200(
+        res,
+        `Delete ${usersDelete.length} ${
           usersDelete.length > 1 ? "users" : "user"
         } success`,
-        ids: usersDelete.map((user) => user._id),
-      });
+        usersDelete.map((user) => user._id)
+      );
     } catch (error) {
-      return res.status(500).json({
-        message: "Internal server error",
-        error: error.message,
-      });
+      return handleError500(res, error);
     }
   },
 };

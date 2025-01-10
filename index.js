@@ -2,9 +2,9 @@ import express, { json } from "express";
 import connect from "./config/db/index.js";
 import routes from "./routes/index.js";
 
-const port = 8888;
+const { PORT } = process.env;
 
-// connect();
+connect();
 
 const app = express();
 
@@ -22,6 +22,6 @@ app.use((req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running ...: ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running ...: ${PORT}`);
 });
