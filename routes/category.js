@@ -17,7 +17,7 @@ router.post(
 );
 router.post(
   "/many",
-  dataListMiddleWare(categorySchema),
+  dataListMiddleWare(categorySchema, "categories"),
   CategoryController.createCategories
 );
 

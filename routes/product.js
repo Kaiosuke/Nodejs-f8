@@ -16,7 +16,7 @@ router.post(
 );
 router.post(
   "/many",
-  dataListMiddleWare(productSchema),
+  dataListMiddleWare(productSchema, "products"),
   ProductController.createProducts
 );
 

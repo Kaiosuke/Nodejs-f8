@@ -7,15 +7,15 @@ const dataMiddleWare = (schema) => async (req, res, next) => {
     return res.status(400).json({
       message: "Internal server error",
       error: error.issues.map((err) => {
-        return err.message;
+        return `${err.path}: ${err.message}`;
       }),
     });
   }
 };
 
-const dataListMiddleWare = (schema) => async (req, res, next) => {
+const dataListMiddleWare = (schema, key) => async (req, res, next) => {
   try {
-    const dataList = req.body.categories;
+    const dataList = req.body[key];
     dataList.forEach((element) => {
       schema.parse(element);
     });
@@ -25,7 +25,7 @@ const dataListMiddleWare = (schema) => async (req, res, next) => {
     return res.status(400).json({
       message: "Internal server error",
       error: error.issues.map((err) => {
-        return err.message;
+        return `${err.path}: ${err.message}`;
       }),
     });
   }

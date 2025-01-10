@@ -7,6 +7,7 @@ import {
   handleSuccess201,
 } from "../helper/handleStatus.js";
 import Users from "../models/data/User.js";
+import bcrypt from "bcryptjs";
 
 const UserController = {
   //Get users
@@ -45,13 +46,17 @@ const UserController = {
       const { username, email, password } = req.body;
 
       const existingEmail = await Users.findOne({ email: email });
+
       if (existingEmail) {
         return handleError409(res, "Email already exists");
       }
+
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(password, salt);
+
       const newUser = new Users({
-        username,
-        email,
-        password,
+        ...req.body,
+        password: secPass,
       });
 
       await newUser.save();
@@ -67,18 +72,6 @@ const UserController = {
     try {
       const { users } = req.body;
 
-      const isValid = users.filter(
-        (user) => !user.username || !user.email || !user.password
-      );
-
-      if (isValid.length) {
-        return handleError400(
-          res,
-          "Each user must have a username, email, and password",
-          isValid
-        );
-      }
-
       const emails = users.map((user) => user.email);
 
       const duplicateEmails = emails.filter(
@@ -88,7 +81,7 @@ const UserController = {
       if (duplicateEmails.length > 0) {
         return handleError400(
           res,
-          "duplicate email from input data",
+          "Duplicate email from input data",
           duplicateEmails
         );
       }
@@ -99,7 +92,15 @@ const UserController = {
         return handleError409(res, "Email already exists", existingEmail);
       }
 
-      const newUsers = await Users.insertMany(users);
+      const usersWithHasPassword = await Promise.all(
+        users.map(async (user) => {
+          const salt = await bcrypt.genSalt(10);
+          const secPass = await bcrypt.hash(user.password, salt);
+          return { ...user, password: secPass };
+        })
+      );
+
+      const newUsers = await Users.insertMany(usersWithHasPassword);
 
       return handleSuccess201(res, "Create user success", newUsers);
     } catch (error) {
@@ -118,6 +119,7 @@ const UserController = {
       }
 
       const existingUser = await Users.findOne({ email: req.body.email });
+
       if (existingUser) {
         return handleError409(res, "Email already exists");
       }

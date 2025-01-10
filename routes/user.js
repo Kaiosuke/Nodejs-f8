@@ -11,7 +11,7 @@ router.get("/:id", UserController.getUser);
 router.post("/", dataMiddleWare(registerSchema), UserController.createUser);
 router.post(
   "/many",
-  dataListMiddleWare(registerSchema),
+  dataListMiddleWare(registerSchema, "users"),
   UserController.createUsers
 );
 
