@@ -1,7 +1,7 @@
 const dataMiddleWare = (schema) => async (req, res, next) => {
   try {
-    const data = schema.parse(req.body);
-    data && console.log(data);
+    schema.parse(req.body);
+
     next();
   } catch (error) {
     return res.status(400).json({

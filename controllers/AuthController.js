@@ -20,7 +20,10 @@ const AuthController = {
         return handleError404(res, "Not Found user");
       }
 
-      const passwordCompare = bcrypt.compare(req.body.password, user.password);
+      const passwordCompare = await bcrypt.compare(
+        req.body.password,
+        user.password
+      );
 
       if (!passwordCompare) {
         return handleError404(res, "Password is incorrect");
