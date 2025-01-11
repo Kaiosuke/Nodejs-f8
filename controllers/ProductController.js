@@ -42,8 +42,10 @@ const ProductController = {
   createProduct: async (req, res) => {
     try {
       if (!req.body.categoryId) {
-        const exitCategory = await Category.findOne({ title: "Uncategorized" });
-        if (!exitCategory) {
+        const existCategory = await Category.findOne({
+          title: "Uncategorized",
+        });
+        if (!existCategory) {
           const newCategory = await Category.create({
             title: "Uncategorized",
             description: "default",
@@ -51,7 +53,7 @@ const ProductController = {
           });
           req.body.categoryId = newCategory._id;
         } else {
-          req.body.categoryId = exitCategory._id;
+          req.body.categoryId = existCategory._id;
         }
       }
 
