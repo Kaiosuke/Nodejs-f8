@@ -11,7 +11,7 @@ const ProductController = {
   //Get products
   getProducts: async (req, res) => {
     try {
-      const products = await Product.find();
+      const products = await Product.find().populate("categoryId");
       if (!products || !products.length) {
         return handleError404(res, "Not found products");
       }
@@ -26,7 +26,7 @@ const ProductController = {
   getProduct: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const product = await Product.findById(id);
+      const product = await Product.findById(id).populate("categoryId");
 
       if (!product) {
         return handleError404(res, "Not found product");
@@ -124,8 +124,24 @@ const ProductController = {
     try {
       const { id } = req.params;
 
-      const product = await Product.findByIdAndDelete(id);
-      if (!product) {
+      const product = await Product.delete({ _id: id, deleted: false });
+      if (!product.matchedCount) {
+        return handleError404(res, "Not found product");
+      }
+      return handleSuccess200(res, "Delete product success", id);
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  // Delete force
+  forceDeleteProduct: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const product = await Product.deleteOne({ _id: id });
+
+      if (!product.deletedCount) {
         return handleError404(res, "Not found product");
       }
       return handleSuccess200(res, "Delete product success", id);

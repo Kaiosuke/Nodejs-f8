@@ -89,8 +89,23 @@ const CategoryController = {
     try {
       const { id } = req.params;
 
-      const category = await Category.findByIdAndDelete(id);
-      if (!category) {
+      const category = await Category.delete({ _id: id, deleted: false });
+      if (!category.matchedCount) {
+        return handleError404(res, "Not found category");
+      }
+      return handleSuccess200(res, "Delete category success", id);
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  //Force Delete Category
+  forceDeleteCategory: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const category = await Category.deleteOne({ _id: id });
+      if (!category.deletedCount) {
         return handleError404(res, "Not found category");
       }
       return handleSuccess200(res, "Delete category success", id);

@@ -14,14 +14,14 @@ const categorySchema = z.object({
   description: z
     .string()
     .min(1, "description must be greater than 1 character"),
-  slug: z.string().min(1, "slug must be greater than 1 character"),
+  slug: z.string().optional(),
 });
 
 const registerSchema = z.object({
   username: z.string().min(1, "username must be greater than 1 character"),
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "password must be greater than 1 character"),
-  role: z.enum(["user", "admin", "ceo"]),
+  role: z.enum(["user", "admin", "ceo"]).optional(),
 });
 
 const loginSchema = z.object({

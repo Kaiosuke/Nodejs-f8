@@ -19,6 +19,8 @@ router.post(
 router.patch("/:id", UserController.updateUser);
 
 router.delete("/user/:id", verifyAuth, UserController.deleteUser);
+router.delete("/user/:id/force", verifyAuth, UserController.forceDeleteUser);
+
 router.delete("/many", verifyAuth, UserController.deleteUsers);
 
 export default router;

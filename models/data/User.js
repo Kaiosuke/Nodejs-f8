@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
+import MongooseDelete from "mongoose-delete";
 
-const userSchema = new Schema(
+const UserSchema = new Schema(
   {
     username: { type: String, require: true },
     email: { type: String, require: true, unique: true },
@@ -15,5 +16,10 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
+UserSchema.plugin(MongooseDelete, {
+  deletedAt: true,
+  overrideMethods: true,
+});
+
+const User = mongoose.model("User", UserSchema);
 export default User;

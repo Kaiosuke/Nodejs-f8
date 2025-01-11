@@ -1,13 +1,22 @@
 import mongoose, { Schema } from "mongoose";
+import MongooseDelete from "mongoose-delete";
+import slug from "mongoose-slug-updater";
 
-const categorySchema = new Schema(
+mongoose.plugin(slug);
+
+const CategorySchema = new Schema(
   {
     title: { type: String, require: true },
     description: { type: String, require: true },
-    slug: { type: String, require: true, unique: true },
+    slug: { type: String, slug: ["title"], unique: true },
   },
   { timestamps: true }
 );
 
-const Category = mongoose.model("Category", categorySchema);
+CategorySchema.plugin(MongooseDelete, {
+  deletedAt: true,
+  overrideMethods: true,
+});
+
+const Category = mongoose.model("Category", CategorySchema);
 export default Category;

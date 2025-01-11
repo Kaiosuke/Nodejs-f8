@@ -1,5 +1,7 @@
+import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 import {
-  handleError400,
   handleError404,
   handleError500,
   handleSuccess200,
@@ -7,9 +9,6 @@ import {
 } from "../helper/handleStatus.js";
 import nodeMailer from "../helper/nodeMailer.js";
 import Users from "../models/data/User.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -19,18 +18,20 @@ const AuthController = {
   // Register
   register: async (req, res) => {
     try {
-      const { password } = req.body;
+      const passwordUser = req.body.password;
       const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(password, salt);
+      const secPass = await bcrypt.hash(passwordUser, salt);
 
       const newUser = await Users.create({
         ...req.body,
         password: secPass,
       });
 
-      // await nodeMailer(newUser);
+      const { password, ...others } = newUser._doc;
 
-      return handleSuccess201(res, "Create user success", newUser);
+      await nodeMailer(others);
+
+      return handleSuccess201(res, "Create user success", others);
     } catch (error) {
       return handleError500(res, error);
     }
@@ -44,7 +45,7 @@ const AuthController = {
         role: user.role,
       },
       process.env.JWT_ACCESS_TOKEN,
-      { expiresIn: "30s" }
+      { expiresIn: "10d" }
     );
   },
 
@@ -55,7 +56,7 @@ const AuthController = {
         role: user.role,
       },
       process.env.JWT_REFRESH_TOKEN,
-      { expiresIn: "30d" }
+      { expiresIn: "365d" }
     );
   },
 

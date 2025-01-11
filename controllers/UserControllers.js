@@ -43,19 +43,21 @@ const UserController = {
   //Post user
   createUser: async (req, res) => {
     try {
-      const { password } = req.body;
+      const passwordUser = req.body.password;
 
       const salt = await bcrypt.genSalt(10);
-      const secPass = await bcrypt.hash(password, salt);
+      const secPass = await bcrypt.hash(passwordUser, salt);
 
       const newUser = new Users({
         ...req.body,
         password: secPass,
       });
 
+      const { password, ...others } = newUser._doc;
+
       await newUser.save();
 
-      return handleSuccess200(res, "Create user success", newUser);
+      return handleSuccess200(res, "Create user success", others);
     } catch (error) {
       return handleError500(res, error);
     }
@@ -124,8 +126,24 @@ const UserController = {
     try {
       const { id } = req.params;
 
-      const user = await Users.findByIdAndDelete(id);
-      if (!user) {
+      const user = await Users.delete({ _id: id, deleted: false });
+
+      if (!user.matchedCount) {
+        return handleError404(res, "Not found user");
+      }
+      return handleSuccess200(res, "Delete user success", id);
+    } catch (error) {
+      return handleError500(res, error);
+    }
+  },
+
+  //Force Delete user
+  forceDeleteUser: async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const user = await Users.deleteOne({ _id: id });
+      if (!user.deletedCount) {
         return handleError404(res, "Not found user");
       }
       return handleSuccess200(res, "Delete user success", id);
