@@ -49,7 +49,6 @@ const ProductController = {
           const newCategory = await Category.create({
             title: "Uncategorized",
             description: "default",
-            slug: "Uncategorized-12",
           });
           req.body.categoryId = newCategory._id;
         } else {
