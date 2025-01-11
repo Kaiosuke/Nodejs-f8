@@ -9,6 +9,7 @@ const ProductSchema = new Schema(
     categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
+      require: true,
     },
   },
   { timestamps: true }

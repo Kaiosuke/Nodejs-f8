@@ -41,13 +41,32 @@ const ProductController = {
   //Post product
   createProduct: async (req, res) => {
     try {
-      const { categoryId } = req.body;
-      const exitsCategory = await Category.findOne({ _id: categoryId });
+      if (!req.body.categoryId) {
+        const exitCategory = await Category.findOne({ title: "Uncategorized" });
+        if (!exitCategory) {
+          const newCategory = await Category.create({
+            title: "Uncategorized",
+            description: "default",
+            slug: "Uncategorized-12",
+          });
+          req.body.categoryId = newCategory._id;
+        } else {
+          req.body.categoryId = exitCategory._id;
+        }
+      }
+
+      const exitsCategory = await Category.findOne({
+        _id: req.body.categoryId,
+      });
 
       if (!exitsCategory) {
         return handleError404(res, "Not found category");
       }
       const newProduct = await Product.create(req.body);
+
+      await Category.findByIdAndUpdate(req.body.categoryId, {
+        $push: { products: newProduct._id },
+      });
 
       return handleSuccess200(res, "Create product success", newProduct);
     } catch (error) {

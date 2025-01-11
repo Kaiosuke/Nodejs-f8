@@ -8,7 +8,13 @@ const CategorySchema = new Schema(
   {
     title: { type: String, require: true },
     description: { type: String, require: true },
-    slug: { type: String, slug: ["title"], unique: true },
+    slug: { type: String, slug: ["title"], require: true, unique: true },
+    products: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   { timestamps: true }
 );

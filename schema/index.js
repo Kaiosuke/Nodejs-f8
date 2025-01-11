@@ -6,7 +6,7 @@ const productSchema = z.object({
   description: z
     .string()
     .min(1, "description must be greater than 1 character"),
-  categoryId: z.string().min(1, "categoryId must be greater than 1 character"),
+  categoryId: z.string().optional(),
 });
 
 const categorySchema = z.object({
