@@ -1,7 +1,6 @@
 const dataMiddleWare = (schema) => async (req, res, next) => {
   try {
     schema.parse(req.body);
-
     next();
   } catch (error) {
     return res.status(400).json({
@@ -19,7 +18,6 @@ const dataListMiddleWare = (schema, key) => async (req, res, next) => {
     dataList.forEach((element) => {
       schema.parse(element);
     });
-
     next();
   } catch (error) {
     return res.status(400).json({

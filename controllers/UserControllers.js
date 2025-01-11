@@ -43,13 +43,7 @@ const UserController = {
   //Post user
   createUser: async (req, res) => {
     try {
-      const { username, email, password } = req.body;
-
-      const existingEmail = await Users.findOne({ email: email });
-
-      if (existingEmail) {
-        return handleError409(res, "Email already exists");
-      }
+      const { password } = req.body;
 
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(password, salt);
@@ -86,12 +80,6 @@ const UserController = {
         );
       }
 
-      const existingEmail = await Users.find({ email: { $in: emails } });
-
-      if (existingEmail.length > 0) {
-        return handleError409(res, "Email already exists", existingEmail);
-      }
-
       const usersWithHasPassword = await Promise.all(
         users.map(async (user) => {
           const salt = await bcrypt.genSalt(10);
@@ -116,12 +104,6 @@ const UserController = {
 
       if (!findUser) {
         return handleError404(res, "Not found user");
-      }
-
-      const existingUser = await Users.findOne({ email: req.body.email });
-
-      if (existingUser) {
-        return handleError409(res, "Email already exists");
       }
 
       const user = await Users.findByIdAndUpdate(

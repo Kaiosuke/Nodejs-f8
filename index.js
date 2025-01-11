@@ -1,6 +1,7 @@
 import express, { json } from "express";
 import connect from "./config/db/index.js";
 import routes from "./routes/index.js";
+import cookieParser from "cookie-parser";
 
 const { PORT } = process.env;
 
@@ -9,6 +10,8 @@ connect();
 const app = express();
 
 app.use(json());
+
+app.use(cookieParser());
 
 routes(app);
 
