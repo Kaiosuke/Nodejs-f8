@@ -11,7 +11,7 @@ const CategoryController = {
   //Get Categories
   getCategories: async (req, res) => {
     try {
-      const categories = await Category.find();
+      const categories = await Category.find().populate("products");
       if (!categories || !categories.length) {
         return handleError404(res, "Not found categories");
       }
@@ -26,7 +26,7 @@ const CategoryController = {
   getCategory: async (req, res) => {
     try {
       const { id } = req.params;
-      const category = await Category.findById(id);
+      const category = await Category.findById(id).populate("products");
 
       if (!category) {
         return handleError404(res, "Not found category");
@@ -66,7 +66,7 @@ const CategoryController = {
   updateCategory: async (req, res) => {
     try {
       const category = await Category.findByIdAndUpdate(
-        id,
+        req.params.id,
         {
           $set: req.body,
         },
@@ -87,21 +87,15 @@ const CategoryController = {
       if (req.params.id === process.env.DEFAULT_CATEGORY) {
         return res.status(401).json("You cannot delete the default category.");
       }
-
       const findCate = await Category.findById(req.params.id);
 
-      const deleteData = await Category.delete({
-        _id: req.params.id,
-      });
-
-      if (!deleteData.matchedCount) {
-        return res.status(404).json("Not found Category");
+      if (!findCate) {
+        return handleError404(res, "Not found category");
       }
 
-      await Product.updateMany({
-        categoryId: req.params.id,
-        categoryId: process.env.DEFAULT_CATEGORY,
-      });
+      // await Category.delete({
+      //   _id: req.params.id,
+      // });
 
       await Category.updateOne(
         {
@@ -110,6 +104,11 @@ const CategoryController = {
         {
           products: [],
         }
+      );
+
+      await Product.updateMany(
+        { categoryId: req.params.id },
+        { categoryId: process.env.DEFAULT_CATEGORY }
       );
 
       await Category.updateOne(
@@ -127,16 +126,15 @@ const CategoryController = {
 
   restore: async (req, res) => {
     try {
+      await Category.restore({ _id: req.params.id });
+
       const findCategory = await Category.findOne({
         _id: req.params.id,
-        deleted: true,
       });
 
       if (!findCategory) {
         return handleError404(res, "Not found Category");
       }
-
-      await Category.restore({ _id: findCategory.id });
 
       return handleSuccess200(res, "restore success", findCategory);
     } catch (error) {
@@ -163,7 +161,7 @@ const CategoryController = {
         return handleError404(res, "Not found Category");
       }
 
-      return handleSuccess200(res, "Force Delete success", id);
+      return handleSuccess200(res, "Force Delete success", req.params.id);
     } catch (error) {
       return handleError500(res, error);
     }

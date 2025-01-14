@@ -168,15 +168,15 @@ const ProductController = {
 
   restore: async (req, res) => {
     try {
+      const data = await Product.restore({ _id: req.params.id });
+
       const findProduct = await Product.findOne({
         _id: req.params.id,
-        deleted: true,
       });
 
       if (!findProduct) {
         return handleError404(res, "Not found product");
       }
-
       await Category.updateOne(
         { _id: findProduct.categoryId },
         {
@@ -184,9 +184,7 @@ const ProductController = {
         }
       );
 
-      const data = await Product.restore({ _id: findProduct._id });
-
-      return handleSuccess200(res, "restore success", data);
+      return handleSuccess200(res, "restore success", findProduct);
     } catch (error) {
       return res.status(500).json({
         message: "Interval server error",

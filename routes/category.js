@@ -18,12 +18,7 @@ router.post(
   CategoryController.createCategory
 );
 
-router.patch(
-  "/:id",
-  dataMiddleWare(categorySchema),
-  verifyAuth,
-  CategoryController.updateCategory
-);
+router.patch("/:id", verifyAuth, CategoryController.updateCategory);
 
 router.delete("/category/:id", verifyAuth, CategoryController.deleteCategory);
 
