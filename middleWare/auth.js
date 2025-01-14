@@ -24,7 +24,7 @@ const verifyAuth = (req, res, next) => {
     if (req.user.role === "admin" || req.user.role === "ceo") {
       next();
     } else {
-      return res.status(403).json("You don't have permission to delete");
+      return res.status(403).json("You don't have permission");
     }
   });
 };

@@ -153,29 +153,29 @@ const UserController = {
   },
 
   // Delete users
-  deleteUsers: async (req, res) => {
-    try {
-      const { ids } = req.body;
+  // deleteUsers: async (req, res) => {
+  //   try {
+  //     const { ids } = req.body;
 
-      const usersDelete = await Users.find({ _id: { $in: ids } });
+  //     const usersDelete = await Users.find({ _id: { $in: ids } });
 
-      const user = await Users.deleteMany({ _id: { $in: ids } });
+  //     const user = await Users.deleteMany({ _id: { $in: ids } });
 
-      if (!user.deletedCount) {
-        return handleError404(res, "Not found user");
-      }
+  //     if (!user.deletedCount) {
+  //       return handleError404(res, "Not found user");
+  //     }
 
-      return handleSuccess200(
-        res,
-        `Delete ${usersDelete.length} ${
-          usersDelete.length > 1 ? "users" : "user"
-        } success`,
-        usersDelete.map((user) => user._id)
-      );
-    } catch (error) {
-      return handleError500(res, error);
-    }
-  },
+  //     return handleSuccess200(
+  //       res,
+  //       `Delete ${usersDelete.length} ${
+  //         usersDelete.length > 1 ? "users" : "user"
+  //       } success`,
+  //       usersDelete.map((user) => user._id)
+  //     );
+  //   } catch (error) {
+  //     return handleError500(res, error);
+  //   }
+  // },
 };
 
 export default UserController;

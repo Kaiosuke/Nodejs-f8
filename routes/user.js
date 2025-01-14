@@ -10,17 +10,18 @@ router.get("/", verifyToken, UserController.getUsers);
 router.get("/:id", verifyToken, UserController.getUser);
 
 router.post("/", dataMiddleWare(registerSchema), UserController.createUser);
-router.post(
-  "/many",
-  dataListMiddleWare(registerSchema, "users"),
-  UserController.createUsers
-);
+
+// router.post(
+//   "/many",
+//   dataListMiddleWare(registerSchema, "users"),
+//   UserController.createUsers
+// );
 
 router.patch("/:id", UserController.updateUser);
 
 router.delete("/user/:id", verifyAuth, UserController.deleteUser);
 router.delete("/user/:id/force", verifyAuth, UserController.forceDeleteUser);
 
-router.delete("/many", verifyAuth, UserController.deleteUsers);
+// router.delete("/many", verifyAuth, UserController.deleteUsers);
 
 export default router;

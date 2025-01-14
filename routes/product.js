@@ -1,9 +1,9 @@
 import { Router } from "express";
 import ProductController from "../controllers/ProductController.js";
 
+import { verifyAuth, verifyToken } from "../middleWare/auth.js";
+import { dataMiddleWare } from "../middleWare/schema.js";
 import { productSchema } from "../schema/index.js";
-import { dataListMiddleWare, dataMiddleWare } from "../middleWare/schema.js";
-import { verifyToken } from "../middleWare/auth.js";
 
 const router = Router();
 
@@ -13,19 +13,28 @@ router.get("/:id", verifyToken, ProductController.getProduct);
 router.post(
   "/",
   dataMiddleWare(productSchema),
+  verifyAuth,
   ProductController.createProduct
 );
-router.post(
-  "/many",
-  dataListMiddleWare(productSchema, "products"),
-  ProductController.createProducts
+
+router.patch("/:id", verifyAuth, ProductController.updateProduct);
+
+router.delete("/product/:id", verifyAuth, ProductController.deleteProduct);
+
+router.patch("/:id/restore", verifyAuth, verifyAuth, ProductController.restore);
+
+router.delete(
+  "/product/:id/force",
+  verifyAuth,
+  ProductController.forceDeleteProduct
 );
 
-router.patch("/:id", ProductController.updateProduct);
+// router.post(
+//   "/many",
+//   dataListMiddleWare(productSchema, "products"),
+//   ProductController.createProducts
+// );
 
-router.delete("/product/:id", ProductController.deleteProduct);
-router.delete("/product/:id/force", ProductController.forceDeleteProduct);
-
-router.delete("/many", ProductController.deleteProducts);
+// router.delete("/many", ProductController.deleteProducts);
 
 export default router;
